@@ -8,6 +8,12 @@ jobs:
         uses: azure/login@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: npm install
+        working-directory: pulumi
       - uses: pulumi/actions@v3
         with:
           command: preview
