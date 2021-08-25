@@ -19,7 +19,7 @@ const plan = new web.AppServicePlan('PulumiPlan', {
 
 const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
 
-const helloApp = new web.WebApp('helloApp', {
+const helloApp = new web.WebApp('pulumiHelloApp', {
   resourceGroupName: resourceGroup.name,
   serverFarmId: plan.id,
   siteConfig: {
@@ -38,7 +38,7 @@ const helloApp = new web.WebApp('helloApp', {
 export const helloEndpoint = pulumi.interpolate`https://${helloApp.defaultHostName}/hello`;
 
 // Create an Azure resource (Storage Account)
-const storageAccount = new storage.StorageAccount('sa', {
+const storageAccount = new storage.StorageAccount('pulumistorage', {
   resourceGroupName: resourceGroup.name,
   sku: {
     name: storage.SkuName.Standard_LRS,
