@@ -8,13 +8,15 @@ jobs:
         uses: azure/login@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
+      - name: Check out repository code
+        uses: actions/checkout@v2
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
       - name: Quck Sanity Test
         run: |
-          ls
+          ls ${{ github.workspace }}
       - name: Install Dependencies
         working-directory: ./pulumi
         run: npm install
