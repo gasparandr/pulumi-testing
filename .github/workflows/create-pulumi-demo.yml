@@ -17,6 +17,10 @@ jobs:
       - name: Quck Sanity Test
         run: |
           ls ${{ github.workspace }}
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Install Dependencies
         working-directory: ./pulumi
         run: npm install
