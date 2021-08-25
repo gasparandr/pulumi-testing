@@ -3,6 +3,7 @@ on: [create]
 jobs:
   Exploring-Pulumi:
     if: ${{ github.event.ref_type == 'branch' }}
+    if: ${{ startsWith(github.event.ref, 'dev/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Pulumi Configure Credentials
