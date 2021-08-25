@@ -1,5 +1,5 @@
-name: Create Action
-on: - create
+name: Create Action Demo
+on: [create]
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
