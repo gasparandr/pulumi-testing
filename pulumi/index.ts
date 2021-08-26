@@ -62,6 +62,10 @@ pulumi.all([helloEndpoint, helloApp.name]).apply(([endpoint, appName]) => {
 
   console.log('Is pulumi dry run?: ', pulumi.runtime.isDryRun());
 
+  if (pulumi.runtime.isDryRun()) return;
+
+  console.log('BRANCH NAME inside PULUMI: ', process.env.BRANCH_NAME);
+
   axios
     .get('http://jsonplaceholder.typicode.com/posts?_limit=1')
     .then((response) => {
