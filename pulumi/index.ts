@@ -3,18 +3,23 @@ import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import axios from 'axios';
 
-enum PulumiCommand {
-  Up = 'up',
-  Destroy = 'destroy',
-}
+import { PulumiCommand } from './constants/pulumi-constants';
+import config from './config/config';
 
-const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
-  .toLocaleLowerCase()
-  .replace(/[^a-zA-Z0-9]/g, '');
+const { resourcePrefix, resourceGroupName, remoteURL, dockerImage } = config;
 
-const resourceGroupName = 'CCBSandbox';
+// enum PulumiCommand {
+//   Up = 'up',
+//   Destroy = 'destroy',
+// }
 
-const remoteURL = 'https://sls-neur-dev-cloud-state.azurewebsites.net';
+// const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
+//   .toLocaleLowerCase()
+//   .replace(/[^a-zA-Z0-9]/g, '');
+
+// const resourceGroupName = 'CCBSandbox';
+
+// const remoteURL = 'https://sls-neur-dev-cloud-state.azurewebsites.net';
 
 const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   resourceGroupName,
@@ -26,7 +31,7 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   },
 });
 
-const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
+// const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
 
 const appService = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName,
