@@ -4,6 +4,8 @@ jobs:
   Exploring-Pulumi-Delete:
     if: ${{ github.event.ref_type == 'branch' && startsWith(github.event.ref, 'dev.') }}
     runs-on: ubuntu-latest
+    env:
+      PULUMI_COMMAND: destroy
     steps:
       - name: Pulumi Configure Credentials
         uses: azure/login@v1
@@ -27,7 +29,7 @@ jobs:
         run: npm install
       - uses: pulumi/actions@v3
         with:
-          command: destroy
+          command: ${{ env.PULUMI_COMMAND }}
           stack-name: ${{ github.event.ref }}
           work-dir: ./pulumi
         env:
@@ -37,3 +39,4 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           BRANCH_NAME: ${{ github.event.ref }}
+          PULUMI_COMMAND: ${{ env.PULUMI_COMMAND }}

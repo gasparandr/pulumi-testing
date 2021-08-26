@@ -4,6 +4,11 @@ import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import axios from 'axios';
 
+enum PulumiCommand {
+  Up = 'up',
+  Destroy = 'destroy',
+}
+
 const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
   .toLocaleLowerCase()
   .replace(/[^a-zA-Z0-9]/g, '');
@@ -58,22 +63,40 @@ const storageAccountKeys = pulumi
 export const primaryStorageKey = storageAccountKeys.keys[0].value;
 
 pulumi.all([helloEndpoint, helloApp.name]).apply(([endpoint, appName]) => {
-  console.log('Is pulumi dry run?: ', pulumi.runtime.isDryRun());
-
-  if (pulumi.runtime.isDryRun()) return;
+  if (pulumi.runtime.isDryRun()) {
+    console.log('Pulumi dry run detected, aborting execution.');
+    return;
+  }
 
   console.log('BRANCH NAME inside PULUMI: ', process.env.BRANCH_NAME);
 
-  axios
-    .get('http://jsonplaceholder.typicode.com/posts?_limit=1')
-    .then((response) => {
-      // handle success
-      console.log(response.data);
-      console.log('Hello endpoint:', endpoint);
-      console.log('App service name:', appName);
-    })
-    .catch((error) => {
-      // handle error
-      console.log(error);
-    });
+  switch (process.env.PULUMI_COMMAND) {
+    case PulumiCommand.Up:
+      console.log(`Pulumi command '${process.env.PULUMI_COMMAND}' detected.`);
+
+      axios
+        .get('http://jsonplaceholder.typicode.com/posts?_limit=1')
+        .then((response) => {
+          // handle success
+          console.log(response.data);
+          console.log('Hello endpoint:', endpoint);
+          console.log('App service name:', appName);
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        });
+
+      break;
+
+    case PulumiCommand.Destroy:
+      console.log(`Pulumi command '${process.env.PULUMI_COMMAND}' detected.`);
+      break;
+
+    default:
+      console.error(
+        `Pulumi command '${process.env.PULUMI_COMMAND}' not recognized. Aborting.`
+      );
+      return;
+  }
 });
