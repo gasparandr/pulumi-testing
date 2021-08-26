@@ -1,5 +1,4 @@
 import * as pulumi from '@pulumi/pulumi';
-import * as resources from '@pulumi/azure-native/resources';
 import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import axios from 'axios';
@@ -13,10 +12,12 @@ const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
   .toLocaleLowerCase()
   .replace(/[^a-zA-Z0-9]/g, '');
 
-const resourceGroup = { name: 'CCBSandbox' };
+const resourceGroupName = 'CCBSandbox';
+
+const remoteURL = 'https://sls-neur-dev-cloud-state.azurewebsites.net';
 
 const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   kind: 'Linux',
   reserved: true,
   sku: {
@@ -27,8 +28,8 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
 
 const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
 
-const helloApp = new web.WebApp(`${resourcePrefix}app`, {
-  resourceGroupName: resourceGroup.name,
+const appService = new web.WebApp(`${resourcePrefix}app`, {
+  resourceGroupName,
   serverFarmId: plan.id,
   siteConfig: {
     appSettings: [
@@ -43,11 +44,11 @@ const helloApp = new web.WebApp(`${resourcePrefix}app`, {
   httpsOnly: true,
 });
 
-export const helloEndpoint = pulumi.interpolate`https://${helloApp.defaultHostName}`;
+export const helloEndpoint = pulumi.interpolate`https://${appService.defaultHostName}`;
 
 // Create an Azure resource (Storage Account)
 const storageAccount = new storage.StorageAccount(`${resourcePrefix}sa`, {
-  resourceGroupName: resourceGroup.name,
+  resourceGroupName,
   sku: {
     name: storage.SkuName.Standard_LRS,
   },
@@ -56,34 +57,34 @@ const storageAccount = new storage.StorageAccount(`${resourcePrefix}sa`, {
 
 // Export the primary key of the Storage Account
 const storageAccountKeys = pulumi
-  .all([resourceGroup.name, storageAccount.name])
+  .all([resourceGroupName, storageAccount.name])
   .apply(([resourceGroupName, accountName]) =>
     storage.listStorageAccountKeys({ resourceGroupName, accountName })
   );
+
 export const primaryStorageKey = storageAccountKeys.keys[0].value;
 
-pulumi.all([helloEndpoint, helloApp.name]).apply(([endpoint, appName]) => {
+pulumi.all([helloEndpoint, appService.name]).apply(([endpoint, appName]) => {
   if (pulumi.runtime.isDryRun()) {
     console.log('Pulumi dry run detected, aborting execution.');
     return;
   }
-
-  console.log('BRANCH NAME inside PULUMI: ', process.env.BRANCH_NAME);
 
   switch (process.env.PULUMI_COMMAND) {
     case PulumiCommand.Up:
       console.log(`Pulumi command '${process.env.PULUMI_COMMAND}' detected.`);
 
       axios
-        .get('http://jsonplaceholder.typicode.com/posts?_limit=1')
+        .get(
+          `${remoteURL}/api/createAppConfig?branchName=${process.env.BRANCH_NAME}&appName=${appName}`
+        )
         .then((response) => {
-          // handle success
-          console.log(response.data);
+          console.log('Response:', response.data);
+          console.log('Branch name:', process.env.BRANCH_NAME);
           console.log('Hello endpoint:', endpoint);
           console.log('App service name:', appName);
         })
         .catch((error) => {
-          // handle error
           console.log(error);
         });
 
