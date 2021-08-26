@@ -4,10 +4,10 @@ import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import axios from 'axios';
 
-const projectPrefix = 'CCB';
-const resourcePrefix = `${projectPrefix}${process.env.BRANCH_NAME}`;
-// Create an Azure Resource Group
-// const resourceGroup = new resources.ResourceGroup("resourceGroup");
+const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
+  .toLocaleLowerCase()
+  .replace(/[^a-zA-Z ]/g, '');
+
 const resourceGroup = { name: 'CCBSandbox' };
 
 const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
