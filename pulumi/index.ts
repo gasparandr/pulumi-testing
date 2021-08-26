@@ -1,25 +1,10 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
-import axios from 'axios';
 
-import { PulumiCommand } from './constants/pulumi-constants';
-import config from './config/config';
-
-const { resourcePrefix, resourceGroupName, remoteURL, dockerImage } = config;
-
-// enum PulumiCommand {
-//   Up = 'up',
-//   Destroy = 'destroy',
-// }
-
-// const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
-//   .toLocaleLowerCase()
-//   .replace(/[^a-zA-Z0-9]/g, '');
-
-// const resourceGroupName = 'CCBSandbox';
-
-// const remoteURL = 'https://sls-neur-dev-cloud-state.azurewebsites.net';
+import { PulumiCommand } from './constants';
+import { upCommandHandler, desstroyCommandHandler } from './handlers';
+import { resourcePrefix, resourceGroupName, dockerImage } from './config';
 
 const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   resourceGroupName,
@@ -30,8 +15,6 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
     tier: 'Basic',
   },
 });
-
-// const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
 
 const appService = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName,
@@ -79,24 +62,15 @@ pulumi.all([helloEndpoint, appService.name]).apply(([endpoint, appName]) => {
     case PulumiCommand.Up:
       console.log(`Pulumi command '${process.env.PULUMI_COMMAND}' detected.`);
 
-      axios
-        .get(
-          `${remoteURL}/api/createAppConfig?branchName=${process.env.BRANCH_NAME}&appName=${appName}`
-        )
-        .then((response) => {
-          console.log('Response:', response.data);
-          console.log('Branch name:', process.env.BRANCH_NAME);
-          console.log('Hello endpoint:', endpoint);
-          console.log('App service name:', appName);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      upCommandHandler({ appName, endpoint });
 
       break;
 
     case PulumiCommand.Destroy:
       console.log(`Pulumi command '${process.env.PULUMI_COMMAND}' detected.`);
+
+      desstroyCommandHandler();
+
       break;
 
     default:
