@@ -6,7 +6,7 @@ import axios from 'axios';
 
 const resourcePrefix = `ccb${process.env.BRANCH_NAME}`
   .toLocaleLowerCase()
-  .replace(/[^a-zA-Z ]/g, '');
+  .replace(/[^a-zA-Z0-9]/g, '');
 
 const resourceGroup = { name: 'CCBSandbox' };
 
