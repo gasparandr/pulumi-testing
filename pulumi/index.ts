@@ -4,11 +4,13 @@ import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import axios from 'axios';
 
+const projectPrefix = 'CCB';
+const resourcePrefix = `${projectPrefix}${process.env.BRANCH_NAME}`;
 // Create an Azure Resource Group
 // const resourceGroup = new resources.ResourceGroup("resourceGroup");
 const resourceGroup = { name: 'CCBSandbox' };
 
-const plan = new web.AppServicePlan('PulumiPlan', {
+const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   resourceGroupName: resourceGroup.name,
   kind: 'Linux',
   reserved: true,
@@ -20,7 +22,7 @@ const plan = new web.AppServicePlan('PulumiPlan', {
 
 const dockerImage = 'mcr.microsoft.com/oss/nginx/nginx:1.15.5-alpine';
 
-const helloApp = new web.WebApp('pulumiHelloApp', {
+const helloApp = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName: resourceGroup.name,
   serverFarmId: plan.id,
   siteConfig: {
@@ -38,10 +40,8 @@ const helloApp = new web.WebApp('pulumiHelloApp', {
 
 export const helloEndpoint = pulumi.interpolate`https://${helloApp.defaultHostName}`;
 
-console.log('Testing if console.log works...');
-
 // Create an Azure resource (Storage Account)
-const storageAccount = new storage.StorageAccount('pulumistorage', {
+const storageAccount = new storage.StorageAccount(`${resourcePrefix}sa`, {
   resourceGroupName: resourceGroup.name,
   sku: {
     name: storage.SkuName.Standard_LRS,
@@ -58,8 +58,6 @@ const storageAccountKeys = pulumi
 export const primaryStorageKey = storageAccountKeys.keys[0].value;
 
 pulumi.all([helloEndpoint, helloApp.name]).apply(([endpoint, appName]) => {
-  console.log("No idea what's happening here: ", endpoint, appName);
-
   console.log('Is pulumi dry run?: ', pulumi.runtime.isDryRun());
 
   if (pulumi.runtime.isDryRun()) return;
@@ -79,19 +77,3 @@ pulumi.all([helloEndpoint, helloApp.name]).apply(([endpoint, appName]) => {
       console.log(error);
     });
 });
-
-// axios
-//   .get('http://jsonplaceholder.typicode.com/posts')
-//   .then((response) => {
-//     // handle success
-//     console.log(response);
-//     console.log(
-//       'Hello endpoint:',
-//       pulumi.interpolate`${helloApp.defaultHostName}`
-//     );
-//     console.log('App service name:', pulumi.interpolate`${helloApp.name}`);
-//   })
-//   .catch((error) => {
-//     // handle error
-//     console.log(error);
-//   });

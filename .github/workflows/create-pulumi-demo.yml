@@ -28,8 +28,9 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: up
-          stack-name: dev
+          stack-name: ${{ github.event.ref }}
           work-dir: ./pulumi
+          upsert: true
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
