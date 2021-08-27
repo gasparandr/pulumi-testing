@@ -37,16 +37,15 @@ jobs:
         working-directory: ./react
         run: npm run build
       - name: Azure Login
-          uses: azure/login@v1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Upload Front-End to Azure Blob Storage
         uses: azure/CLI@v1
         with:
           azcliversion: 2.0.72
           inlineScript: |
-              az storage blob upload-batch --account-name ${{ env.AZURE_STORAGE_ACCOUNT_NAME }} -d '$web' -s ./react/build
-      
+            az storage blob upload-batch --account-name ${{ env.AZURE_STORAGE_ACCOUNT_NAME }} -d '$web' -s ./react/build
       - name: Azure Logout
         run: |
-              az logout
+          az logout
