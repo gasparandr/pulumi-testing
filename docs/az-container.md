@@ -13,4 +13,4 @@ az acr build --registry PulumiMockRegistry --image pulumi-mock-image .
 References
 
 - [Deploy Docker Image to App Service](https://github.com/pulumi/examples/blob/master/azure-ts-appservice-docker/index.ts)
-- [Get Container Registry](https://www.pulumi.com/docs/reference/pkg/azure/containerservice/getregistry/)
+- [Get Container Registry (Not okay - Use the @pulumi/azure_native package instead)](https://www.pulumi.com/docs/reference/pkg/azure/containerservice/getregistry/)
