@@ -1,7 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
-import * as azure from '@pulumi/azure';
 import * as containerregistry from '@pulumi/azure-native/containerregistry';
 
 import { PulumiCommand } from './constants';
@@ -23,8 +22,13 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   },
 });
 
-const azRegistry = azure.containerservice.getRegistry({
-  name: registryName,
+// const azRegistry = azure.containerservice.getRegistry({
+//   name: registryName,
+//   resourceGroupName,
+// });
+
+const azRegistry = containerregistry.getRegistry({
+  registryName,
   resourceGroupName,
 });
 
