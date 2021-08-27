@@ -1,4 +1,4 @@
-name: Create Pulumi Demo
+name: Create Environment (Pulumi)
 on: [create]
 jobs:
   Exploring-Pulumi-Create:
@@ -7,23 +7,17 @@ jobs:
     env:
       PULUMI_COMMAND: up
     steps:
-      - name: Check out repository code
+      - name: Checkout Repository Code
         uses: actions/checkout@v2
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      - name: Quck Sanity Test
-        run: |
-          ls ${{ github.workspace }}
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
       - name: Install Dependencies
         working-directory: ./pulumi
         run: npm install
-      - uses: pulumi/actions@v3
+      - name: Execute Pulumi
+        uses: pulumi/actions@v3
         with:
           command: ${{ env.PULUMI_COMMAND }}
           stack-name: ${{ github.event.ref }}
