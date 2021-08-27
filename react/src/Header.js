@@ -4,10 +4,13 @@ import Jumbotron from 'react-bootstrap/Jumbotron';
 const Header = () => {
   useEffect(() => {
     fetch(`${process.env.REACT_APP_REMOTE_ENDPOINT}/users`)
-      .then((res) => res.json())
+      .then((res) => res.text())
       .then(
         (result) => {
-          console.log(result);
+          console.log(
+            `Get request to ---> ${process.env.REACT_APP_REMOTE_ENDPOINT}/users`
+          );
+          console.log('Response --->', result);
         },
         // Note: it's important to handle errors here
         // instead of a catch() block so that we don't swallow
