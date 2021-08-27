@@ -2,6 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
 import * as containerregistry from '@pulumi/azure-native/containerregistry';
+import * as core from '@actions/core';
 
 import { PulumiCommand } from './constants';
 import { upCommandHandler, desstroyCommandHandler } from './handlers';
@@ -79,6 +80,7 @@ export const helloEndpoint = pulumi.interpolate`https://${appService.defaultHost
 
 // Create an Azure resource (Storage Account)
 const storageAccount = new storage.StorageAccount(`${resourcePrefix}sa`, {
+  enableHttpsTrafficOnly: true,
   resourceGroupName,
   sku: {
     name: storage.SkuName.Standard_LRS,
@@ -86,12 +88,27 @@ const storageAccount = new storage.StorageAccount(`${resourcePrefix}sa`, {
   kind: storage.Kind.StorageV2,
 });
 
+// Enable static website support
+const staticWebsite = new storage.StorageAccountStaticWebsite(
+  `${resourcePrefix}sw`,
+  {
+    accountName: storageAccount.name,
+    resourceGroupName,
+    indexDocument: 'index.html',
+    error404Document: '404.html',
+  }
+);
+
+// Web endpoint to the website
+export const staticEndpoint = storageAccount.primaryEndpoints.web;
+
 // Export the primary key of the Storage Account
 const storageAccountKeys = pulumi
   .all([resourceGroupName, storageAccount.name])
-  .apply(([resourceGroupName, accountName]) =>
-    storage.listStorageAccountKeys({ resourceGroupName, accountName })
-  );
+  .apply(([resourceGroupName, accountName]) => {
+    core.exportVariable('AZURE_STORAGE_ACCOUNT_NAME', accountName);
+    return storage.listStorageAccountKeys({ resourceGroupName, accountName });
+  });
 
 export const primaryStorageKey = storageAccountKeys.keys[0].value;
 

@@ -31,5 +31,22 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           BRANCH_NAME: ${{ github.event.ref }}
           PULUMI_COMMAND: ${{ env.PULUMI_COMMAND }}
-      - name: Log Variable
-        run: echo "Variable value is ${{ env.MY_VARIABLE }}"
+      - name: Sanity Check (log endpoint variable)
+        run: echo "Variable value is ${{ env.REACT_APP_REMOTE_ENDPOINT }}"
+      - name: Build React
+        working-directory: ./react
+        run: npm run build
+      - name: Azure Login
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Upload Front-End to Azure Blob Storage
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScript: |
+              az storage blob upload-batch --account-name ${{ env.AZURE_STORAGE_ACCOUNT_NAME }} -d '$web' -s ./react/build
+      
+      - name: Azure Logout
+        run: |
+              az logout

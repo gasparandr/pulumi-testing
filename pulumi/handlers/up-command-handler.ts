@@ -8,7 +8,7 @@ interface UpCommandParams {
 }
 
 export const upCommandHandler = ({ appName, endpoint }: UpCommandParams) => {
-  core.exportVariable('MY_VARIABLE', endpoint);
+  core.exportVariable('REACT_APP_REMOTE_ENDPOINT', endpoint);
 
   axios
     .get(
