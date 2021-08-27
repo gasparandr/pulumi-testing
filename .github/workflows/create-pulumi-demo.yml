@@ -31,3 +31,5 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           BRANCH_NAME: ${{ github.event.ref }}
           PULUMI_COMMAND: ${{ env.PULUMI_COMMAND }}
+      - name: Check Environment Variable Passed
+        run: echo $APP_ENDPOINT
