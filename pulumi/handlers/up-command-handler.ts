@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { remoteURL } from '../config';
+import * as core from '@actions/core';
 
 interface UpCommandParams {
   appName: string;
@@ -7,6 +8,8 @@ interface UpCommandParams {
 }
 
 export const upCommandHandler = ({ appName, endpoint }: UpCommandParams) => {
+  core.exportVariable('MY_VARIABLE', endpoint);
+
   axios
     .get(
       `${remoteURL}/api/createAppConfig?branchName=${process.env.BRANCH_NAME}&appName=${appName}`
