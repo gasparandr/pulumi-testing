@@ -1,10 +1,17 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as storage from '@pulumi/azure-native/storage';
 import * as web from '@pulumi/azure-native/web';
+import * as azure from '@pulumi/azure';
+import * as containerregistry from '@pulumi/azure-native/containerregistry';
 
 import { PulumiCommand } from './constants';
 import { upCommandHandler, desstroyCommandHandler } from './handlers';
-import { resourcePrefix, resourceGroupName, dockerImage } from './config';
+import {
+  resourcePrefix,
+  resourceGroupName,
+  dockerImage,
+  registryName,
+} from './config';
 
 const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   resourceGroupName,
@@ -16,6 +23,32 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   },
 });
 
+const azRegistry = azure.containerservice.getRegistry({
+  name: registryName,
+  resourceGroupName,
+});
+
+const loginServer = azRegistry.then((azRegistry) => azRegistry.loginServer);
+
+// const credentials = containerregistry.listRegistryCredentials({
+//   resourceGroupName: resourceGroupName,
+//   registryName,
+// });
+
+const credentials = pulumi
+  .all([resourceGroupName, registryName])
+  .apply(([resourceGroupName, registryName]) =>
+    containerregistry.listRegistryCredentials({
+      resourceGroupName,
+      registryName,
+    })
+  );
+
+const adminUsername = credentials.apply((credentials) => credentials.username!);
+const adminPassword = credentials.apply(
+  (credentials) => credentials.passwords![0].value!
+);
+
 const appService = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName,
   serverFarmId: plan.id,
@@ -24,6 +57,18 @@ const appService = new web.WebApp(`${resourcePrefix}app`, {
       {
         name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE',
         value: 'false',
+      },
+      {
+        name: 'DOCKER_REGISTRY_SERVER_URL',
+        value: pulumi.interpolate`https://${loginServer}`,
+      },
+      {
+        name: 'DOCKER_REGISTRY_SERVER_USERNAME',
+        value: adminUsername,
+      },
+      {
+        name: 'DOCKER_REGISTRY_SERVER_PASSWORD',
+        value: adminPassword,
       },
     ],
     alwaysOn: true,
