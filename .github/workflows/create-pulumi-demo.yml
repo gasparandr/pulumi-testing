@@ -13,7 +13,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      - name: Install Dependencies
+      - name: Install Pulumi Dependencies
         working-directory: ./pulumi
         run: npm install
       - name: Execute Pulumi
@@ -33,6 +33,9 @@ jobs:
           PULUMI_COMMAND: ${{ env.PULUMI_COMMAND }}
       - name: Sanity Check (log endpoint variable)
         run: echo "Variable value is ${{ env.REACT_APP_REMOTE_ENDPOINT }}"
+      - name: Install React Dependencies
+        working-directory: ./react
+        run: npm install
       - name: Build React
         working-directory: ./react
         run: npm run build
