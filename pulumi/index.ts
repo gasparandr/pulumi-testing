@@ -49,6 +49,14 @@ const adminPassword = credentials.apply(
   (credentials) => credentials.passwords![0].value!
 );
 
+pulumi
+  .all([adminUsername, adminPassword, loginServer])
+  .apply(([adminUsername, adminPassword, loginServer]) => {
+    console.log('Admin username: ', adminUsername);
+    console.log('Admin password: ', adminPassword);
+    console.log('Login server: ', loginServer);
+  });
+
 const appService = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName,
   serverFarmId: plan.id,
@@ -70,9 +78,13 @@ const appService = new web.WebApp(`${resourcePrefix}app`, {
         name: 'DOCKER_REGISTRY_SERVER_PASSWORD',
         value: adminPassword,
       },
+      {
+        name: 'WEBSITES_PORT',
+        value: '3000',
+      },
     ],
     alwaysOn: true,
-    linuxFxVersion: `DOCKER|${dockerImage}`,
+    linuxFxVersion: pulumi.interpolate`DOCKER|${loginServer}/${dockerImage}`,
   },
   httpsOnly: true,
 });
