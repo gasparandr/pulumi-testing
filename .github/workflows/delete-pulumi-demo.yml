@@ -1,7 +1,7 @@
 name: Delete Environment (Pulumi)
 on: [delete]
 jobs:
-  Exploring-Pulumi-Delete:
+  Delete-Environment:
     if: ${{ github.event.ref_type == 'branch' && startsWith(github.event.ref, 'dev.') }}
     runs-on: ubuntu-latest
     env:

@@ -1,7 +1,7 @@
 name: Create Environment (Pulumi)
 on: [create]
 jobs:
-  Exploring-Pulumi-Create:
+  Create-Environment:
     if: ${{ github.event.ref_type == 'branch' && startsWith(github.event.ref, 'dev.') }}
     runs-on: ubuntu-latest
     env:
