@@ -22,22 +22,12 @@ const plan = new web.AppServicePlan(`${resourcePrefix}plan`, {
   },
 });
 
-// const azRegistry = azure.containerservice.getRegistry({
-//   name: registryName,
-//   resourceGroupName,
-// });
-
-const azRegistry = containerregistry.getRegistry({
+const registry = containerregistry.getRegistry({
   registryName,
   resourceGroupName,
 });
 
-const loginServer = azRegistry.then((azRegistry) => azRegistry.loginServer);
-
-// const credentials = containerregistry.listRegistryCredentials({
-//   resourceGroupName: resourceGroupName,
-//   registryName,
-// });
+const loginServer = registry.then((registry) => registry.loginServer);
 
 const credentials = pulumi
   .all([resourceGroupName, registryName])
@@ -52,14 +42,6 @@ const adminUsername = credentials.apply((credentials) => credentials.username!);
 const adminPassword = credentials.apply(
   (credentials) => credentials.passwords![0].value!
 );
-
-pulumi
-  .all([adminUsername, adminPassword, loginServer])
-  .apply(([adminUsername, adminPassword, loginServer]) => {
-    console.log('Admin username: ', adminUsername);
-    console.log('Admin password: ', adminPassword);
-    console.log('Login server: ', loginServer);
-  });
 
 const appService = new web.WebApp(`${resourcePrefix}app`, {
   resourceGroupName,
